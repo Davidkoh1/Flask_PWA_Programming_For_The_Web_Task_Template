@@ -1,0 +1,6 @@
+-- database: ../data_source.db
+
+--SELECT * FROM Community_User;
+--SELECT * FROM Community_Details
+--SELECT * FROM Event_Details
+--SELECT * FROM Event_Link
