@@ -61,3 +61,58 @@ def check_user_credentials(username, password):
     finally:
         if conn:
             conn.close()
+
+def get_user_Id(username):
+    """Retrieves the user_Id for a given username."""
+    conn = None
+    try:
+        conn = sql.connect("database/data_source.db")
+        cur = conn.cursor()
+
+        # The SQL query to select the user_Id where the user_Name matches
+        query = "SELECT user_Id FROM User WHERE user_Name = ?"
+        cur.execute(query, (username,))
+
+        # Fetch the first result (since usernames should be unique)
+        user_id = cur.fetchone()
+
+        if user_id:
+            # user_id is a tuple, so we get the first element
+            print(f"User ID for {username} is: {user_id[0]}")
+            return user_id[0]
+        else:
+            print(f"No user found with username: {username}")
+            return None
+    except sql.Error as e:
+        print(f"Database error: {e}")
+        return None
+    finally:
+        if conn:
+            conn.close()
+
+# Add this new function to your existing database_manager.py file
+
+def get_user_info(user_id):
+    """Retrieves user information from the database by user ID."""
+    conn = None
+    try:
+        conn = sql.connect("database/data_source.db")
+        conn.row_factory = sql.Row  # This will allow us to get results as a dictionary-like object
+        cur = conn.cursor()
+
+        query = "SELECT user_Name, first_Name, last_Name FROM User WHERE user_Id = ?"
+        cur.execute(query, (user_id,))
+
+        user_row = cur.fetchone()
+        
+        if user_row:
+            # Return the row as a dictionary
+            return dict(user_row)
+        else:
+            return None
+    except sql.Error as e:
+        print(f"Database error: {e}")
+        return None
+    finally:
+        if conn:
+            conn.close()

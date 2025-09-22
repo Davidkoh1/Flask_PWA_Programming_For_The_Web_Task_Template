@@ -1,10 +1,22 @@
-
 <nav>
-  <img src="static\images\logo.png" alt="VSCode Extensions site logo." />
-  <h1>Community Connect</h1>
-  <ul class="topnav">
-    <li><a href="landing.html">Home</a></li>
-    <li><a href="add.html">Create a New Event</a></li>
-    <li><a href="login.html">Log In</a></li>
-  </ul>
-</nav>  
+<img src="static\images\logo.png" alt="VSCode Extensions site logo." />
+<h1>Community Connect</h1>
+<ul class="topnav">
+<li><a href="{{ url_for('landing') }}">Home</a></li>
+<li><a href="{{ url_for('add') }}">Create a New Event</a></li>
+
+{% if is_logged_in %}
+<li class="dropdown">
+  <a href="javascript:void(0)" class="dropbtn">{{ username }} &#9660;</a>
+  <div class="dropdown-content">
+    <a href="#">My Profile</a>
+    <a href="#">Settings</a>
+    <a href="{{ url_for('logout') }}">Log Out</a>
+  </div>
+</li>
+{% else %}
+<li><a href="{{ url_for('login') }}">Log In</a></li>
+{% endif %}
+
+</ul>
+</nav>

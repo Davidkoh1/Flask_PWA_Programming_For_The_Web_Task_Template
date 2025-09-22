@@ -1,13 +1,31 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, session
 import database_manager as dbHandler
 
 app = Flask(__name__)
+# A secret key is required for Flask sessions to work securely.
+# In a real application, this should be a long, random, and secret string.
+app.secret_key = 'your_super_secret_key_here' 
+
+# A context processor to make user-related variables available to all templates
+@app.context_processor
+def inject_user_status():
+    user_id = session.get('user_id')
+    user_info = None
+    if user_id:
+        user_info = dbHandler.get_user_info(user_id)
+    
+    return {
+        'is_logged_in': user_id is not None,
+        'username': user_info.get('user_Name') if user_info else None
+    }
 
 # Route for the main page and index.html
 @app.route('/', methods=['GET'])
 @app.route('/landing.html', methods=['GET'])
 def index():
     """Fetches data from the database and renders the main page."""
+    # The 'is_logged_in' and 'username' variables are now automatically available,
+    # so we don't need to pass them here.
     data = dbHandler.listExtension()
     return render_template('landing.html', content=data)
 
@@ -68,10 +86,26 @@ def process_login():
 
     if dbHandler.check_user_credentials(username, password):
         print("Login successful.")
+        # Retrieve the user_Id from the database
+        user_id = dbHandler.get_user_Id(username)
+        
+        if user_id:
+            # Store the user_id in the session
+            session['user_id'] = user_id
+            print(f"Stored user ID {user_id} in session.")
+
         return redirect(url_for('index'))
     else:
         print("Login failed.")
         return redirect(url_for('login'))
+
+# A new route for logging out
+@app.route('/logout')
+def logout():
+    """Logs the user out by clearing the session."""
+    session.pop('user_id', None)
+    print("User logged out.")
+    return redirect(url_for('index'))
 
 if __name__ == '__main__':
     # Running in debug mode to see errors in the browser.
