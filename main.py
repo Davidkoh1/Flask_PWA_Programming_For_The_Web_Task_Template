@@ -30,10 +30,31 @@ def index():
     return render_template('landing.html', content=data)
 
 # Route for the 'add' page
-@app.route('/add.html', methods=['GET'])
+@app.route('/add', methods=['GET', 'POST'])
 def add():
-    """Renders the form to add a new extension."""
+    if request.method == 'POST':
+        name = request.form['name']
+        description = request.form['description']
+        location = request.form['location']
+        date = request.form['date']
+        time = request.form['time']
+        image = request.form['image']
+
+        dbHandler.add_event(name, description, location, date, time, image)
+        return redirect(url_for('browse'))   # ✅ points to your browse() function
+
     return render_template('add.html')
+
+@app.route('/events/<int:event_id>', methods=['GET'])
+def event_details(event_id):
+    """Show details for a single event."""
+    event = dbHandler.get_event_by_id(event_id)
+    if not event:
+        return render_template('404.html'), 404
+    return render_template('event_details.html', event=event)
+
+
+
 
 @app.route('/landing.html', methods=['GET'])
 def landing():
@@ -50,6 +71,13 @@ def signup():
 def login():
     """Renders the form for the sign-up page."""
     return render_template('login.html')
+
+@app.route('/browse.html', methods=['GET'])
+def browse():
+    """Fetch all events from the database and render the browse page."""
+    events = dbHandler.get_all_events()
+    return render_template('browse.html', events=events)
+
 
 # New route to handle the form submission (POST request)
 @app.route('/signup', methods=['POST'])

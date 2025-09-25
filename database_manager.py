@@ -16,7 +16,6 @@ def add_user(first_name, last_name, username, email, phone, password):
         conn = sql.connect("database/data_source.db")
         cur = conn.cursor()
 
-        # SQL query using a parameterized statement to prevent SQL injection.
         query = """
         INSERT INTO User (first_name, last_name, user_Name, email, phone, password)
         VALUES (?, ?, ?, ?, ?, ?)
@@ -28,7 +27,6 @@ def add_user(first_name, last_name, username, email, phone, password):
 
     except sql.Error as e:
         print(f"Database error: {e}")
-
 
     finally:
         if conn:
@@ -62,26 +60,19 @@ def check_user_credentials(username, password):
         if conn:
             conn.close()
 
+
 def get_user_Id(username):
     """Retrieves the user_Id for a given username."""
     conn = None
     try:
         conn = sql.connect("database/data_source.db")
         cur = conn.cursor()
-
-        # The SQL query to select the user_Id where the user_Name matches
         query = "SELECT user_Id FROM User WHERE user_Name = ?"
         cur.execute(query, (username,))
-
-        # Fetch the first result (since usernames should be unique)
         user_id = cur.fetchone()
-
         if user_id:
-            # user_id is a tuple, so we get the first element
-            print(f"User ID for {username} is: {user_id[0]}")
             return user_id[0]
         else:
-            print(f"No user found with username: {username}")
             return None
     except sql.Error as e:
         print(f"Database error: {e}")
@@ -90,23 +81,18 @@ def get_user_Id(username):
         if conn:
             conn.close()
 
-# Add this new function to your existing database_manager.py file
 
 def get_user_info(user_id):
     """Retrieves user information from the database by user ID."""
     conn = None
     try:
         conn = sql.connect("database/data_source.db")
-        conn.row_factory = sql.Row  # This will allow us to get results as a dictionary-like object
+        conn.row_factory = sql.Row
         cur = conn.cursor()
-
         query = "SELECT user_Name, first_Name, last_Name FROM User WHERE user_Id = ?"
         cur.execute(query, (user_id,))
-
         user_row = cur.fetchone()
-        
         if user_row:
-            # Return the row as a dictionary
             return dict(user_row)
         else:
             return None
@@ -116,3 +102,75 @@ def get_user_info(user_id):
     finally:
         if conn:
             conn.close()
+
+
+# ================================
+# EVENT FUNCTIONS
+# ================================
+
+def get_all_events():
+    """Fetch all events ordered by date and time."""
+    conn = None
+    try:
+        conn = sql.connect("database/data_source.db")
+        conn.row_factory = sql.Row  # lets us access columns by name
+        cur = conn.cursor()
+        query = """
+        SELECT event_Id, name, description, date, time, image
+        FROM Event
+        WHERE date >= DATE('now')
+        ORDER BY date, time
+        """
+        cur.execute(query)
+        rows = cur.fetchall()
+        print(rows)
+        return [dict(row) for row in rows]
+    except sql.Error as e:
+        print(f"Database error: {e}")
+        return []
+    finally:
+        if conn:
+            conn.close()
+
+
+def add_event(name, description, location, date, time, image):
+    """Insert a new event into the Event table."""
+    conn = None
+    try:
+        conn = sql.connect("database/data_source.db")
+        cur = conn.cursor()
+        query = """
+        INSERT INTO Event (name, description, location, date, time, image)
+        VALUES (?, ?, ?, ?, ?, ?)
+        """
+        cur.execute(query, (name, description, location, date, time, image))
+        conn.commit()
+    except sql.Error as e:
+        print(f"Database error: {e}")
+    finally:
+        if conn:
+            conn.close()
+
+def get_event_by_id(event_id):
+    """Fetch a single event by its ID as a dictionary."""
+    conn = None
+    try:
+        conn = sql.connect("database/data_source.db")
+        conn.row_factory = sql.Row
+        cur = conn.cursor()
+        query = """
+        SELECT event_Id, name, description, location, date, time, image
+        FROM Event
+        WHERE event_Id = ?
+        """
+        cur.execute(query, (event_id,))
+        row = cur.fetchone()
+        return dict(row) if row else None
+    except sql.Error as e:
+        print(f"Database error: {e}")
+        return None
+    finally:
+        if conn:
+            conn.close()
+
+

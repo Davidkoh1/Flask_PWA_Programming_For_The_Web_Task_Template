@@ -1,0 +1,16 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+<div class="event-details-container">
+    <div class="event-details-card">
+        <img src="{{ event['image'] }}" alt="{{ event['name'] }}" class="event-details-img">
+        <div class="event-details-content">
+            <h1>{{ event['name'] }}</h1>
+            <p class="event-meta"><strong>Date:</strong> {{ event['date'] }} · {{ event['time'] }}</p>
+            <p class="event-meta"><strong>Location:</strong> {{ event['location'] }}</p>
+            <p class="event-description">{{ event['description'] }}</p>
+            <a href="/browse.html" class="back-btn">← Back to Events</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
